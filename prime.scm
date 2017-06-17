@@ -17,7 +17,7 @@
 
 (define (expmod_new base exp n)
   (cond ((= exp 0) 1)
-	((= 0 (remainder n 2)) (remainder (square (expmod_new base (/ exp 2) n)) n))
+	((= 0 (remainder exp 2)) (remainder (square (expmod_new base (/ exp 2) n)) n))
         (else (remainder (* base (expmod base (- exp 1) n)) n))
 ))
 
