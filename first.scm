@@ -118,7 +118,9 @@
 	(else (* b (expt b (- n 1))))))
 ;(expt 2 10)
 
-(define (remainder n m)
+
+
+(define (remainder_ n m)
   (cond ((< n m) n)
 	(else (remainder (- n m) m))))
 ;(ramainder 6 2)
@@ -135,7 +137,7 @@
 	  ((= (remainder n m) 0) m)
 	  (else (min_divisor_test n (+ 1 m)))))
   (min_divisor_test n 2))
-;(min_divisor 121)
+;(min_divisor 19999)
 
 (define (prime? n)
   (= n (min_divisor n)))
@@ -147,9 +149,10 @@
 
 (define (expmod_new base exp n)
   (cond ((= exp 0) 1)
-	((= 0 (remainder n 2)) (remainder (square (expmod_new base (/ exp 2) n)) n))
-        (else (remainder (* base (expmod base (- exp 1) n)) n))
+	((= 0 (remainder exp 2)) (remainder (square (expmod_new base (/ exp 2) n)) n))
+        (else (remainder (* base (expmod_new base (- exp 1) n)) n))
 ))
+;(expmod_new 3 36000 36000)
 
 (define (fermat_test n)
   (define (fermat_test_try a)
@@ -161,5 +164,64 @@
 	((fermat_test n) (fast_prime? n (- times 1)))
 	(else #f)))
 
-;(fast_prime? 997 5)
+;(fast_prime? 1999 5)
+
+
+(define (sum a b next act)
+  (if (> a b)
+      0
+      (+ (act a)
+	 (sum (next a) b next act))))
+(define (cube x) (* x (square x)))
+(define (inc x) (+ x 1))
+;(sum 1 10 inc cube)
+
+(define (product a b next act)
+  (if (> a b)
+      1
+      (* (act a)
+	 (product (next a) b next act))))
+
+(define (product_iter a b next act)
+  (define (iter a result) 
+    (if (> a b)
+	result
+	(iter (next a) (* (act a) result))))
+  (iter a 1))
+(define (pi x)
+  (if (= 0 (remainder x 2))
+      (/ (+ x 2) (+ x 1))
+      (/ (+ x 1) (+ x 2))))
+
+(* 4 (exact->inexact (product_iter 1 10000 inc pi)))
+;;(product_iter 1 1000 inc pi)
+
+
+(define (integral a b dx f)
+  (define (add_dx x) (+ x dx))
+  (* dx
+     (sum (+ a (/ dx 2)) b add_dx f))
+)
+
+;(integral 0 1 0.0001 square)
+
+
+(define (simpson a b n f)
+  (define (add_s x) (+ x (/ (- b a) n)))
+  (define (sum_fixed a b next act times)
+    (define (multi x) 
+      (cond ((= 0 times) x)
+	    ((= n times) x)
+	    ((= 1 (remainder times 2)) (* x 4))
+	    ((= 0 (remainder times 2)) (* x 2))))
+    (if (> a b)
+      0
+      (+ (multi (act a))
+	 (sum_fixed (next a) b next act (+ times 1)))))
+  
+  (* (/ (/ (- b a) n) 3)
+     (sum_fixed a b add_s f 0))
+)
+
+;(simpson 0 0.5 500 square)
 
